@@ -10,7 +10,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 PLAINTEXT = b"I'd just like to interject for a moment. What you're referring to as Linux, is in fact, GNU/Linux, or as I've recently taken to calling it, GNU plus Linux."  # noqa
-KEY = b"STICKBUGSTICKBUG"
+KEY = os.urandom(16)
 
 
 @app.route("/", methods=["GET"])
@@ -65,7 +65,7 @@ def validate_ciphertext():
     padder = padding.PKCS7(16 * 8).unpadder()
     plaintext = padder.update(padded_data)
     try:
-        plaintext += padder.update(padded_data)
+        plaintext += padder.finalize()
     except ValueError:
         return "bad padding!", 500
 
