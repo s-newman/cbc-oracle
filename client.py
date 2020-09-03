@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import base64
 import multiprocessing
 
@@ -75,10 +76,17 @@ def decrypt_block(block_data):
     for idx, val in enumerate(istate):
         plaintext.append(val ^ xor_block[idx])
 
+    print(bytes(plaintext))
     return bytes(plaintext)
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-T", default=6, type=int, help="Number of worker processes to spawn."
+    )
+    args = parser.parse_args()
+
     # Get the ciphertext and IV
     resp = requests.get("http://localhost:5000/ciphertext")
     ciphertext = base64.b64decode(resp.json()["ciphertext"])
@@ -102,7 +110,7 @@ def main():
 
         blocks.append(block)
 
-    with multiprocessing.Pool(processes=6) as pool:
+    with multiprocessing.Pool(processes=args.T) as pool:
         results = pool.map(decrypt_block, blocks)
 
     try:
